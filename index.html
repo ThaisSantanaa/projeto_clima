@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Estação · Previsão do Tempo</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Space+Grotesk:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="sky" aria-hidden="true">
+    <div class="sky__body" id="skyBody"></div>
+  </div>
+
+  <main class="station">
+
+    <header class="station__header">
+      <p class="eyebrow">Estação meteorológica digital</p>
+      <h1 class="wordmark">Estação<span class="wordmark__dot">.</span></h1>
+    </header>
+
+    <form id="searchForm" class="search" autocomplete="off">
+      <label for="cityInput" class="search__label">Consultar cidade</label>
+      <div class="search__row">
+        <input
+          type="text"
+          id="cityInput"
+          name="city"
+          class="search__input"
+          placeholder="Ex.: São Paulo, Lisboa, Tóquio…"
+          required
+        />
+        <button type="submit" class="search__button">
+          <span>Buscar</span>
+        </button>
+      </div>
+    </form>
+
+    <section id="status" class="status" hidden></section>
+
+    <section id="result" class="reading" hidden>
+
+      <div class="reading__location">
+        <h2 id="cityName" class="reading__city">—</h2>
+        <p id="cityMeta" class="reading__meta">—</p>
+      </div>
+
+      <div class="reading__main">
+        <div class="gauge">
+          <svg class="gauge__ring" viewBox="0 0 200 200" aria-hidden="true">
+            <circle class="gauge__track" cx="100" cy="100" r="88" />
+            <circle class="gauge__fill" id="gaugeFill" cx="100" cy="100" r="88" />
+          </svg>
+          <div class="gauge__value">
+            <span id="temperature" class="gauge__number">--</span>
+            <span class="gauge__unit">°C</span>
+          </div>
+        </div>
+
+        <div class="reading__condition">
+          <span id="conditionIcon" class="condition__icon" aria-hidden="true">–</span>
+          <span id="conditionText" class="condition__text">Aguardando consulta</span>
+          <span id="feelsLike" class="condition__feels"></span>
+        </div>
+      </div>
+
+      <dl class="metrics">
+        <div class="metrics__item">
+          <dt>Umidade</dt>
+          <dd id="humidity">—</dd>
+        </div>
+        <div class="metrics__item">
+          <dt>Vento</dt>
+          <dd id="wind">—</dd>
+        </div>
+        <div class="metrics__item">
+          <dt>Direção</dt>
+          <dd id="windDir">—</dd>
+        </div>
+        <div class="metrics__item">
+          <dt>Coordenadas</dt>
+          <dd id="coords">—</dd>
+        </div>
+      </dl>
+
+    </section>
+
+  </main>
+
+  <footer class="credit">
+    Dados via <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>
+  </footer>
+
+  <script src="api.js"></script>
+</body>
+</html>
