@@ -16,6 +16,13 @@ const FORECAST_URL =
 
 
 /* ============================================================
+   CONFIGURAÇÃO DA PREVISÃO
+   ============================================================ */
+
+const FORECAST_DAYS = 5;
+
+
+/* ============================================================
    CONFIGURAÇÃO DO GAUGE
    ============================================================ */
 
@@ -79,6 +86,9 @@ const windDirEl =
 
 const coordsEl =
   document.getElementById("coords");
+
+const forecastListEl =
+  document.getElementById("forecastList");
 
 
 /* ============================================================
@@ -414,6 +424,47 @@ function formatConsultationDate(dateString) {
 
 
 /* ============================================================
+   NOME DO DIA DA SEMANA (CURTO), PARA A PREVISÃO
+   ============================================================ */
+
+function formatForecastDayLabel(dateString, index) {
+
+  if (index === 0) {
+    return "Hoje";
+  }
+
+
+  const date =
+    new Date(`${dateString}T00:00:00`);
+
+
+  if (Number.isNaN(date.getTime())) {
+    return "—";
+  }
+
+
+  const label =
+    new Intl.DateTimeFormat(
+      "pt-BR",
+      { weekday: "short" }
+    ).format(date);
+
+
+  /* Remove o ponto final (ex.: "seg." -> "seg") e capitaliza */
+
+  const clean =
+    label.replace(".", "");
+
+
+  return (
+    clean.charAt(0).toUpperCase() +
+    clean.slice(1)
+  );
+
+}
+
+
+/* ============================================================
    TEMA DIA / NOITE
    ============================================================ */
 
@@ -436,37 +487,37 @@ function updateTheme(isDay) {
    ÍCONE DO CLIMA
    ============================================================ */
 
-function updateWeatherIcon(weatherCode, isDay) {
+function getWeatherIconClass(weatherCode, isDay) {
 
   const weatherInfo =
     WEATHER_CODES[weatherCode];
 
 
   if (!weatherInfo) {
-
-    conditionIconEl.className =
-      "condition__icon wi wi-na";
-
-    return;
-
+    return "wi-na";
   }
-
-
-  let iconClass;
 
 
   if (isDay) {
-
-    iconClass =
-      weatherInfo.dayIcon;
-
-  } else {
-
-    iconClass =
-      weatherInfo.nightIcon ||
-      weatherInfo.dayIcon;
-
+    return weatherInfo.dayIcon;
   }
+
+
+  return (
+    weatherInfo.nightIcon ||
+    weatherInfo.dayIcon
+  );
+
+}
+
+
+function updateWeatherIcon(weatherCode, isDay) {
+
+  const iconClass =
+    getWeatherIconClass(
+      weatherCode,
+      isDay
+    );
 
 
   conditionIconEl.className =
@@ -650,6 +701,125 @@ function renderWeather(place, current) {
 
 
 /* ============================================================
+   RENDERIZA A PREVISÃO DE 5 DIAS
+   ============================================================ */
+
+function renderForecast(daily) {
+
+  if (!forecastListEl) {
+    return;
+  }
+
+
+  forecastListEl.innerHTML = "";
+
+
+  const {
+    time = [],
+    weather_code: weatherCodes = [],
+    temperature_2m_max: maxTemps = [],
+    temperature_2m_min: minTemps = []
+  } = daily;
+
+
+  time.forEach((dateString, index) => {
+
+    const li =
+      document.createElement("li");
+
+    li.className = "forecast__day";
+
+
+    /* Dia da semana */
+
+    const dayNameEl =
+      document.createElement("span");
+
+    dayNameEl.className =
+      "forecast__day-name";
+
+    dayNameEl.textContent =
+      formatForecastDayLabel(
+        dateString,
+        index
+      );
+
+
+    /* Ícone (assume período diurno para a previsão) */
+
+    const iconEl =
+      document.createElement("span");
+
+    iconEl.className =
+      `forecast__day-icon wi ${getWeatherIconClass(
+        weatherCodes[index],
+        true
+      )}`;
+
+    iconEl.setAttribute(
+      "aria-hidden",
+      "true"
+    );
+
+
+    /* Temperaturas máxima e mínima */
+
+    const tempsEl =
+      document.createElement("div");
+
+    tempsEl.className =
+      "forecast__day-temps";
+
+
+    const maxEl =
+      document.createElement("span");
+
+    maxEl.className =
+      "forecast__day-max";
+
+    const maxValue =
+      maxTemps[index];
+
+    maxEl.textContent =
+      maxValue !== undefined &&
+      maxValue !== null
+        ? `${Math.round(maxValue)}°`
+        : "—";
+
+
+    const minEl =
+      document.createElement("span");
+
+    minEl.className =
+      "forecast__day-min";
+
+    const minValue =
+      minTemps[index];
+
+    minEl.textContent =
+      minValue !== undefined &&
+      minValue !== null
+        ? `${Math.round(minValue)}°`
+        : "—";
+
+
+    tempsEl.appendChild(maxEl);
+    tempsEl.appendChild(minEl);
+
+
+    li.appendChild(dayNameEl);
+    li.appendChild(iconEl);
+    li.appendChild(tempsEl);
+
+
+    forecastListEl.appendChild(li);
+
+  });
+
+}
+
+
+/* ============================================================
    GEOCODIFICAÇÃO
    Nome da cidade -> Latitude / Longitude
    ============================================================ */
@@ -745,7 +915,7 @@ async function geocodeCity(cityName) {
 
 
 /* ============================================================
-   CONSULTA O CLIMA
+   CONSULTA O CLIMA ATUAL
    Latitude / Longitude -> clima atual
    ============================================================ */
 
@@ -848,6 +1018,111 @@ async function fetchCurrentWeather(
 
 
 /* ============================================================
+   CONSULTA A PREVISÃO DE 5 DIAS
+   Latitude / Longitude -> previsão diária (máx / mín)
+   ============================================================ */
+
+async function fetchForecast(
+  latitude,
+  longitude
+) {
+
+  const url =
+    new URL(FORECAST_URL);
+
+
+  url.searchParams.set(
+    "latitude",
+    latitude
+  );
+
+
+  url.searchParams.set(
+    "longitude",
+    longitude
+  );
+
+
+  url.searchParams.set(
+    "daily",
+    [
+      "weather_code",
+      "temperature_2m_max",
+      "temperature_2m_min"
+    ].join(",")
+  );
+
+
+  url.searchParams.set(
+    "forecast_days",
+    String(FORECAST_DAYS)
+  );
+
+
+  url.searchParams.set(
+    "timezone",
+    "auto"
+  );
+
+
+  let response;
+
+
+  try {
+
+    response =
+      await fetch(url);
+
+  } catch (error) {
+
+    throw new Error(
+      "Erro de rede ao buscar a previsão. Verifique sua conexão com a internet."
+    );
+
+  }
+
+
+  if (!response.ok) {
+
+    throw new Error(
+      "Não foi possível consultar a previsão de 5 dias. A API pode estar indisponível."
+    );
+
+  }
+
+
+  let data;
+
+
+  try {
+
+    data =
+      await response.json();
+
+  } catch (error) {
+
+    throw new Error(
+      "A API de previsão retornou uma resposta inválida."
+    );
+
+  }
+
+
+  if (!data.daily) {
+
+    throw new Error(
+      "A resposta da API não trouxe os dados da previsão de 5 dias."
+    );
+
+  }
+
+
+  return data.daily;
+
+}
+
+
+/* ============================================================
    FLUXO PRINCIPAL
    ============================================================ */
 
@@ -899,7 +1174,8 @@ async function handleSearch(event) {
 
 
     /* ----------------------------------------
-       2. Buscar clima
+       2. Buscar clima atual + previsão
+          (em paralelo)
        ---------------------------------------- */
 
     showStatus(
@@ -907,11 +1183,20 @@ async function handleSearch(event) {
     );
 
 
-    const current =
-      await fetchCurrentWeather(
-        place.latitude,
-        place.longitude
-      );
+    const [current, daily] =
+      await Promise.all([
+
+        fetchCurrentWeather(
+          place.latitude,
+          place.longitude
+        ),
+
+        fetchForecast(
+          place.latitude,
+          place.longitude
+        )
+
+      ]);
 
 
     /* ----------------------------------------
@@ -925,6 +1210,9 @@ async function handleSearch(event) {
       place,
       current
     );
+
+
+    renderForecast(daily);
 
 
   } catch (error) {
@@ -947,14 +1235,45 @@ async function handleSearch(event) {
    EVENTO DO FORMULÁRIO
    ============================================================ */
 
-form.addEventListener(
-  "submit",
-  handleSearch
-);
+if (form) {
+
+  form.addEventListener(
+    "submit",
+    handleSearch
+  );
+
+}
 
 
 /* ============================================================
-   TESTE INICIAL
+   EXPORTAÇÃO PARA TESTES (Node/Jest)
+   Não afeta a execução no navegador.
+   ============================================================ */
+
+if (
+  typeof module !== "undefined" &&
+  module.exports
+) {
+
+  module.exports = {
+    geocodeCity,
+    fetchCurrentWeather,
+    fetchForecast,
+    degreesToCompass,
+    formatConsultationDate,
+    formatForecastDayLabel,
+    getWeatherIconClass,
+    renderWeather,
+    renderForecast,
+    WEATHER_CODES,
+    FORECAST_DAYS
+  };
+
+}
+
+
+/* ============================================================
+   LOG INICIAL
    ============================================================ */
 
 console.log(
