@@ -1,0 +1,1320 @@
+/* ============================================================
+   ESTAÇÃO.
+   Meu observatório digital
+   ============================================================ */
+
+
+/* ============================================================
+   VARIÁVEIS
+   ============================================================ */
+
+:root {
+
+  --ink: #090719;
+
+  --night-1: #0d0924;
+  --night-2: #171044;
+  --night-3: #24135a;
+
+  --day-1: #4169a1;
+  --day-2: #6e82bd;
+  --day-3: #9c9ed1;
+
+  --cloud: #f8f7ff;
+  --cloud-dim: #c5c3dc;
+
+  --purple: #9b7cff;
+  --purple-light: #c8baff;
+
+  --pink: #ee8cff;
+
+  --amber: #f5a623;
+
+  --teal: #4fa9a2;
+
+  --line: rgba(248, 247, 255, 0.14);
+
+  --glass: rgba(255, 255, 255, 0.055);
+
+  --display: "Fraunces", serif;
+  --body: "Space Grotesk", system-ui, sans-serif;
+  --mono: "Space Mono", ui-monospace, monospace;
+
+}
+
+
+/* ============================================================
+   RESET
+   ============================================================ */
+
+* {
+  box-sizing: border-box;
+}
+
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+
+body {
+
+  position: relative;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  min-height: 100vh;
+
+  overflow-x: hidden;
+
+  color: var(--cloud);
+
+  font-family: var(--body);
+
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      var(--night-2),
+      var(--ink) 65%
+    );
+
+  transition:
+    background 1s ease,
+    color 0.5s ease;
+}
+
+
+/* ============================================================
+   TEMA NOTURNO
+   ============================================================ */
+
+body.night {
+
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      var(--night-3),
+      var(--night-1) 50%,
+      var(--ink) 100%
+    );
+
+}
+
+
+/* ============================================================
+   TEMA DIURNO
+   ============================================================ */
+
+body.day {
+
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      var(--day-3),
+      var(--day-2) 45%,
+      var(--day-1) 100%
+    );
+
+}
+
+
+/* ============================================================
+   CÉU
+   ============================================================ */
+
+.sky {
+
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 0;
+
+  overflow: hidden;
+
+  pointer-events: none;
+
+}
+
+
+/* Brilho */
+
+.sky__glow {
+
+  position: absolute;
+
+  width: 600px;
+  height: 600px;
+
+  top: -280px;
+  right: -180px;
+
+  border-radius: 50%;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(155, 124, 255, 0.28),
+      transparent 70%
+    );
+
+  filter: blur(10px);
+
+}
+
+
+/* ============================================================
+   ESTRELAS
+   ============================================================ */
+
+.stars {
+
+  position: absolute;
+
+  inset: 0;
+
+  background-repeat: repeat;
+
+  opacity: 0.8;
+
+}
+
+
+.stars--one {
+
+  background-image:
+    radial-gradient(circle, #ffffff 1px, transparent 1px);
+
+  background-size: 90px 90px;
+
+}
+
+
+.stars--two {
+
+  background-image:
+    radial-gradient(circle, rgba(255,255,255,0.7) 1px, transparent 1px);
+
+  background-size: 140px 140px;
+
+  background-position: 30px 50px;
+
+  opacity: 0.45;
+
+}
+
+
+.stars--three {
+
+  background-image:
+    radial-gradient(circle, rgba(200,186,255,0.8) 1px, transparent 1px);
+
+  background-size: 210px 210px;
+
+  background-position: 100px 20px;
+
+  opacity: 0.35;
+
+}
+
+
+/* ============================================================
+   SOL
+   ============================================================ */
+
+.sun {
+
+  position: absolute;
+
+  width: 120px;
+  height: 120px;
+
+  top: 70px;
+  right: 8%;
+
+  border-radius: 50%;
+
+  background:
+    radial-gradient(
+      circle,
+      #fff8cf 0%,
+      #ffd66b 35%,
+      rgba(245,166,35,0.2) 70%,
+      transparent 72%
+    );
+
+  opacity: 0;
+
+  transform: scale(0.5);
+
+  transition:
+    opacity 1s ease,
+    transform 1s ease;
+
+}
+
+
+body.day .sun {
+
+  opacity: 1;
+
+  transform: scale(1);
+
+}
+
+
+/* ============================================================
+   LUA
+   ============================================================ */
+
+.moon {
+
+  position: absolute;
+
+  width: 95px;
+  height: 95px;
+
+  top: 80px;
+  right: 9%;
+
+  border-radius: 50%;
+
+  background:
+    radial-gradient(
+      circle at 35% 30%,
+      #ffffff,
+      #ddd8ff 50%,
+      #a69bd2 100%
+    );
+
+  box-shadow:
+    0 0 40px rgba(200, 186, 255, 0.35);
+
+  opacity: 1;
+
+  transition: opacity 1s ease;
+
+}
+
+
+body.day .moon {
+
+  opacity: 0;
+
+}
+
+
+/* ============================================================
+   LAYOUT PRINCIPAL
+   ============================================================ */
+
+.station {
+
+  position: relative;
+
+  z-index: 1;
+
+  width: 100%;
+
+  max-width: 620px;
+
+  padding: 50px 24px 40px;
+
+  margin: 0 auto;
+
+}
+
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+
+.station__header {
+
+  text-align: center;
+
+  margin-bottom: 38px;
+
+}
+
+
+.brand-icon {
+
+  width: 42px;
+  height: 42px;
+
+  margin: 0 auto 12px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid rgba(155, 124, 255, 0.4);
+
+  border-radius: 50%;
+
+  color: var(--purple-light);
+
+  background: rgba(155, 124, 255, 0.08);
+
+  box-shadow:
+    0 0 25px rgba(155, 124, 255, 0.12);
+
+}
+
+
+.brand-icon span {
+
+  font-size: 18px;
+
+}
+
+
+.eyebrow {
+
+  margin: 0 0 8px;
+
+  font-family: var(--mono);
+
+  font-size: 10px;
+
+  letter-spacing: 0.18em;
+
+  text-transform: uppercase;
+
+  color: var(--cloud-dim);
+
+}
+
+
+.wordmark {
+
+  margin: 0;
+
+  font-family: var(--display);
+
+  font-weight: 600;
+
+  font-size: clamp(42px, 10vw, 62px);
+
+  line-height: 1;
+
+  letter-spacing: -0.02em;
+
+}
+
+
+.wordmark__dot {
+
+  color: var(--pink);
+
+}
+
+
+.subtitle {
+
+  margin: 12px 0 0;
+
+  color: var(--cloud-dim);
+
+  font-size: 13px;
+
+  font-style: italic;
+
+}
+
+
+/* ============================================================
+   BUSCA
+   ============================================================ */
+
+.search {
+
+  margin-bottom: 24px;
+
+}
+
+
+.search__label {
+
+  display: block;
+
+  margin-bottom: 8px;
+
+  font-family: var(--mono);
+
+  font-size: 10px;
+
+  letter-spacing: 0.12em;
+
+  text-transform: uppercase;
+
+  color: var(--cloud-dim);
+
+}
+
+
+.search__row {
+
+  display: flex;
+
+  gap: 10px;
+
+}
+
+
+.search__input {
+
+  flex: 1;
+
+  min-width: 0;
+
+  padding: 15px 17px;
+
+  color: var(--cloud);
+
+  background: rgba(255,255,255,0.06);
+
+  border: 1px solid var(--line);
+
+  border-radius: 12px;
+
+  outline: none;
+
+  font-family: var(--body);
+
+  font-size: 15px;
+
+  backdrop-filter: blur(12px);
+
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+
+}
+
+
+.search__input::placeholder {
+
+  color: var(--cloud-dim);
+
+}
+
+
+.search__input:focus {
+
+  border-color: var(--purple);
+
+  background: rgba(255,255,255,0.09);
+
+  box-shadow:
+    0 0 0 3px rgba(155,124,255,0.10);
+
+}
+
+
+.search__button {
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  flex-shrink: 0;
+
+  padding: 14px 20px;
+
+  color: #100b20;
+
+  background:
+    linear-gradient(
+      135deg,
+      #b8a1ff,
+      #ee8cff
+    );
+
+  border: none;
+
+  border-radius: 12px;
+
+  font-family: var(--body);
+
+  font-size: 14px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 8px 25px rgba(155,124,255,0.2);
+
+  transition:
+    transform 0.15s ease,
+    filter 0.15s ease;
+
+}
+
+
+.search__button:hover {
+
+  filter: brightness(1.08);
+
+  transform: translateY(-1px);
+
+}
+
+
+.search__button:active {
+
+  transform: scale(0.97);
+
+}
+
+
+.search__icon {
+
+  font-size: 19px;
+
+}
+
+
+/* ============================================================
+   STATUS
+   ============================================================ */
+
+.status {
+
+  margin-bottom: 24px;
+
+  padding: 14px 16px;
+
+  color: var(--cloud-dim);
+
+  border: 1px dashed var(--line);
+
+  border-radius: 12px;
+
+  background: rgba(255,255,255,0.035);
+
+  font-family: var(--mono);
+
+  font-size: 12px;
+
+  text-align: center;
+
+}
+
+
+.status[data-tone="error"] {
+
+  color: #ffb4a2;
+
+  border-color:
+    rgba(255,180,162,0.4);
+
+  background:
+    rgba(255,100,80,0.05);
+
+}
+
+
+/* ============================================================
+   CARD DO CLIMA
+   ============================================================ */
+
+.reading {
+
+  padding: 30px 26px 24px;
+
+  border: 1px solid var(--line);
+
+  border-radius: 24px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255,255,255,0.08),
+      rgba(255,255,255,0.025)
+    );
+
+  backdrop-filter: blur(18px);
+
+  box-shadow:
+    0 25px 70px rgba(0,0,0,0.20);
+
+}
+
+
+/* ============================================================
+   LOCAL
+   ============================================================ */
+
+.reading__location {
+
+  text-align: center;
+
+  margin-bottom: 12px;
+
+}
+
+
+.location__pin {
+
+  display: block;
+
+  margin-bottom: 5px;
+
+  color: var(--pink);
+
+  font-size: 12px;
+
+}
+
+
+.reading__city {
+
+  margin: 0;
+
+  font-family: var(--display);
+
+  font-weight: 600;
+
+  font-size: clamp(26px, 6vw, 34px);
+
+}
+
+
+.reading__meta {
+
+  margin: 5px 0 0;
+
+  color: var(--cloud-dim);
+
+  font-family: var(--mono);
+
+  font-size: 11px;
+
+}
+
+
+/* ============================================================
+   DATA E HORA
+   ============================================================ */
+
+.consultation {
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  gap: 5px;
+
+  margin: 18px 0 4px;
+
+  text-align: center;
+
+}
+
+
+.consultation__label {
+
+  color: var(--cloud-dim);
+
+  font-family: var(--mono);
+
+  font-size: 9px;
+
+  letter-spacing: 0.1em;
+
+  text-transform: uppercase;
+
+}
+
+
+.consultation__date {
+
+  color: var(--purple-light);
+
+  font-family: var(--mono);
+
+  font-size: 12px;
+
+}
+
+
+/* ============================================================
+   GAUGE
+   ============================================================ */
+
+.reading__main {
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  margin: 24px 0 8px;
+
+}
+
+
+.gauge {
+
+  position: relative;
+
+  width: 220px;
+
+  height: 220px;
+
+}
+
+
+.gauge__ring {
+
+  width: 100%;
+  height: 100%;
+
+  transform: rotate(-90deg);
+
+}
+
+
+.gauge__track {
+
+  fill: none;
+
+  stroke:
+    rgba(255,255,255,0.08);
+
+  stroke-width: 8;
+
+}
+
+
+.gauge__fill {
+
+  fill: none;
+
+  stroke: var(--pink);
+
+  stroke-width: 8;
+
+  stroke-linecap: round;
+
+  stroke-dasharray: 553;
+
+  stroke-dashoffset: 553;
+
+  filter:
+    drop-shadow(
+      0 0 7px rgba(238,140,255,0.55)
+    );
+
+  transition:
+    stroke-dashoffset 0.9s
+    cubic-bezier(0.65,0,0.35,1);
+
+}
+
+
+.gauge__value {
+
+  position: absolute;
+
+  inset: 0;
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 4px;
+
+}
+
+
+.gauge__number {
+
+  font-family: var(--display);
+
+  font-weight: 600;
+
+  font-size: 58px;
+
+  line-height: 1;
+
+  font-variant-numeric: tabular-nums;
+
+}
+
+
+.gauge__unit {
+
+  color: var(--cloud-dim);
+
+  font-family: var(--mono);
+
+  font-size: 18px;
+
+}
+
+
+/* ============================================================
+   CONDIÇÃO
+   ============================================================ */
+
+.reading__condition {
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  gap: 7px;
+
+  margin-top: 15px;
+
+  text-align: center;
+
+}
+
+
+.condition__icon {
+
+  color: var(--amber);
+
+  font-size: 42px;
+
+  line-height: 1;
+
+  filter:
+    drop-shadow(
+      0 0 12px rgba(245,166,35,0.25)
+    );
+
+}
+
+
+.condition__text {
+
+  font-size: 16px;
+
+  font-weight: 500;
+
+}
+
+
+.condition__feels {
+
+  color: var(--cloud-dim);
+
+  font-family: var(--mono);
+
+  font-size: 11px;
+
+}
+
+
+/* ============================================================
+   MÉTRICAS
+   ============================================================ */
+
+.metrics {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, 1fr);
+
+  gap: 10px;
+
+  margin: 28px 0 0;
+
+  padding-top: 20px;
+
+  border-top:
+    1px solid var(--line);
+
+  text-align: center;
+
+}
+
+
+.metrics__item dt {
+
+  margin-bottom: 7px;
+
+  color: var(--cloud-dim);
+
+  font-family: var(--mono);
+
+  font-size: 9px;
+
+  letter-spacing: 0.07em;
+
+  text-transform: uppercase;
+
+}
+
+
+.metrics__item dd {
+
+  margin: 0;
+
+  color: var(--teal);
+
+  font-family: var(--mono);
+
+  font-size: 12px;
+
+}
+
+
+/* ============================================================
+   PREVISÃO · PRÓXIMOS 5 DIAS
+   ============================================================ */
+
+.forecast {
+
+  margin: 24px 0 0;
+
+  padding-top: 20px;
+
+  border-top:
+    1px solid var(--line);
+
+}
+
+
+.forecast__label {
+
+  margin: 0 0 14px;
+
+  color: var(--cloud-dim);
+
+  font-family: var(--mono);
+
+  font-size: 9px;
+
+  letter-spacing: 0.1em;
+
+  text-transform: uppercase;
+
+  text-align: center;
+
+}
+
+
+.forecast__list {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(5, 1fr);
+
+  gap: 8px;
+
+  margin: 0;
+  padding: 0;
+
+  list-style: none;
+
+}
+
+
+.forecast__day {
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  gap: 6px;
+
+  padding: 14px 6px;
+
+  border: 1px solid var(--line);
+
+  border-radius: 14px;
+
+  background: rgba(255,255,255,0.04);
+
+  text-align: center;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+
+}
+
+
+.forecast__day:hover {
+
+  background: rgba(255,255,255,0.07);
+
+  border-color: rgba(155,124,255,0.35);
+
+}
+
+
+.forecast__day-name {
+
+  color: var(--cloud-dim);
+
+  font-family: var(--mono);
+
+  font-size: 10px;
+
+  letter-spacing: 0.05em;
+
+  text-transform: uppercase;
+
+}
+
+
+.forecast__day-icon {
+
+  color: var(--amber);
+
+  font-size: 24px;
+
+  line-height: 1;
+
+}
+
+
+.forecast__day-temps {
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  gap: 2px;
+
+  font-family: var(--mono);
+
+}
+
+
+.forecast__day-max {
+
+  color: var(--cloud);
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+}
+
+
+.forecast__day-min {
+
+  color: var(--cloud-dim);
+
+  font-size: 11px;
+
+}
+
+
+/* ============================================================
+   RODAPÉ DO CARD
+   ============================================================ */
+
+.reading__footer {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 9px;
+
+  margin-top: 24px;
+
+  color: var(--cloud-dim);
+
+  font-family: var(--mono);
+
+  font-size: 9px;
+
+  letter-spacing: 0.05em;
+
+  text-transform: uppercase;
+
+}
+
+
+.footer__star {
+
+  color: var(--pink);
+
+}
+
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+
+.credit {
+
+  position: relative;
+
+  z-index: 1;
+
+  margin-top: auto;
+
+  padding: 22px 18px 30px;
+
+  color: var(--cloud-dim);
+
+  font-family: var(--mono);
+
+  font-size: 9px;
+
+  text-align: center;
+
+}
+
+
+.credit__separator {
+
+  margin: 0 8px;
+
+  color: var(--pink);
+
+}
+
+
+.credit a {
+
+  color: var(--teal);
+
+  text-decoration: none;
+
+}
+
+
+.credit a:hover {
+
+  text-decoration: underline;
+
+}
+
+
+/* ============================================================
+   RESPONSIVIDADE
+   ============================================================ */
+
+@media (max-width: 500px) {
+
+  .station {
+
+    padding:
+      35px 16px 30px;
+
+  }
+
+
+  .search__row {
+
+    flex-direction: column;
+
+  }
+
+
+  .search__button {
+
+    width: 100%;
+
+  }
+
+
+  .reading {
+
+    padding:
+      26px 18px 22px;
+
+  }
+
+
+  .metrics {
+
+    grid-template-columns:
+      repeat(2, 1fr);
+
+    row-gap: 18px;
+
+  }
+
+
+  .gauge {
+
+    width: 200px;
+    height: 200px;
+
+  }
+
+
+  .gauge__number {
+
+    font-size: 54px;
+
+  }
+
+
+  .moon,
+  .sun {
+
+    right: -35px;
+
+    transform: scale(0.75);
+
+  }
+
+
+  .forecast__list {
+
+    grid-template-columns:
+      repeat(3, 1fr);
+
+    row-gap: 8px;
+
+  }
+
+}
+
+
+/* ============================================================
+   ACESSIBILIDADE
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+
+  * {
+
+    scroll-behavior: auto !important;
+
+    transition-duration: 0.01ms !important;
+
+    animation-duration: 0.01ms !important;
+
+  }
+
+}

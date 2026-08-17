@@ -1,0 +1,16 @@
+{
+  "name": "estacao-clima",
+  "version": "1.0.0",
+  "description": "Estação. — previsão do tempo com Open-Meteo",
+  "main": "api.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0"
+  },
+  "jest": {
+    "testEnvironment": "jsdom"
+  }
+}
