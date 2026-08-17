@@ -14,6 +14,25 @@
 
 
   <!-- =====================================================
+       CABEÇALHOS DE SEGURANÇA (via meta tag)
+       Observação: para produção, prefira enviar estes
+       cabeçalhos via servidor/CDN (ex.: Netlify _headers,
+       Nginx, Cloudflare), pois alguns diretivas de CSP
+       (como frame-ancestors) não têm efeito via <meta>.
+  ====================================================== -->
+
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="default-src 'none'; script-src 'self'; style-src 'self' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data:; connect-src 'self' https://api.open-meteo.com https://geocoding-api.open-meteo.com; base-uri 'self'; form-action 'self';"
+  >
+
+  <meta
+    name="referrer"
+    content="no-referrer-when-downgrade"
+  >
+
+
+  <!-- =====================================================
        GOOGLE FONTS
   ====================================================== -->
 
@@ -31,16 +50,23 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Space+Grotesk:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap"
     rel="stylesheet"
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
   >
 
 
   <!-- =====================================================
        WEATHER ICONS
+       Nota: recomenda-se gerar e adicionar um hash de
+       integridade (SRI) para esta versão fixa (2.0.12) ao
+       publicar em produção. Ver SECURITY.md para instruções.
   ====================================================== -->
 
   <link
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/weather-icons/2.0.12/css/weather-icons.min.css"
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
   >
 
 
@@ -442,10 +468,26 @@
     <a
       href="https://open-meteo.com/"
       target="_blank"
-      rel="noopener"
+      rel="noopener noreferrer"
     >
       Open-Meteo
     </a>
+
+
+    <p class="credit__privacy">
+      Esta aplicação não coleta, armazena nem compartilha
+      dados pessoais. O nome da cidade digitado é enviado
+      apenas à Open-Meteo para localizar as coordenadas
+      geográficas e consultar o clima, sem uso de cookies,
+      login ou rastreamento.
+      <a
+        href="https://open-meteo.com/en/terms"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Termos da Open-Meteo
+      </a>
+    </p>
 
   </footer>
 

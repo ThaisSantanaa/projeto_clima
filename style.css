@@ -1218,6 +1218,36 @@ body.day .moon {
 }
 
 
+.credit__privacy {
+
+  max-width: 380px;
+
+  margin: 14px auto 0;
+
+  padding-top: 14px;
+
+  border-top: 1px solid var(--line);
+
+  color: var(--cloud-dim);
+
+  font-family: var(--body);
+
+  font-size: 10px;
+
+  line-height: 1.5;
+
+  opacity: 0.75;
+
+}
+
+
+.credit__privacy a {
+
+  color: var(--teal);
+
+}
+
+
 /* ============================================================
    RESPONSIVIDADE
    ============================================================ */
