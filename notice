@@ -1,0 +1,66 @@
+# NOTICE — Atribuições de Terceiros
+
+Este projeto ("Projeto Clima") é distribuído sob a licença MIT (ver `LICENSE`), mas utiliza APIs, bibliotecas, fontes e ícones de terceiros, listados abaixo com suas respectivas licenças e obrigações de atribuição. Este arquivo cumpre a obrigação de reconhecimento de autoria exigida por essas licenças.
+
+---
+
+## 🌐 Dados climáticos
+
+### Open-Meteo
+- **O que é usado:** API de previsão do tempo (`api.open-meteo.com`) e de geocodificação (`geocoding-api.open-meteo.com`)
+- **Licença dos dados:** [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) para uso não comercial
+- **Atribuição exigida:** sim — este projeto credita a Open-Meteo visivelmente na interface (rodapé) e neste documento
+- **Uso comercial:** requer plano pago e chave de API — **não implementado neste projeto**, que usa apenas o nível gratuito/não comercial
+- **Site:** https://open-meteo.com/
+- **Termos:** https://open-meteo.com/en/terms
+
+> "Weather data by Open-Meteo.com" — atribuição conforme exigido pelos termos de uso.
+
+---
+
+## 🔤 Fontes
+
+### Google Fonts — Fraunces, Space Grotesk, Space Mono
+- **O que é usado:** folhas de estilo carregadas via `fonts.googleapis.com`
+- **Licença:** [SIL Open Font License 1.1 (OFL)](https://scripts.sil.org/OFL)
+- **Atribuição exigida:** não obrigatória para uso, mas mencionada aqui por transparência
+- **Site:** https://fonts.google.com/
+
+---
+
+## 🌤️ Ícones
+
+### Weather Icons (Erik Flowers)
+- **O que é usado:** conjunto de ícones de clima, via CDN (`cdnjs.cloudflare.com/ajax/libs/weather-icons`)
+- **Licença da fonte/ícones:** [SIL Open Font License 1.1 (OFL)](http://scripts.sil.org/OFL)
+- **Licença do CSS/SCSS/LESS:** [MIT License](http://opensource.org/licenses/mit-license.html)
+- **Licença da documentação:** [CC BY 3.0](http://creativecommons.org/licenses/by/3.0/)
+- **Autor:** Erik Flowers ([erikflowers.github.io/weather-icons](http://erikflowers.github.io/weather-icons))
+- **Atribuição exigida:** sim, para a fonte (OFL) — reconhecida neste documento
+
+---
+
+## 🧪 Dependências de desenvolvimento (Node/npm)
+
+Estas dependências são usadas **apenas para rodar os testes automatizados** (`npm test`) e não fazem parte do código enviado ao navegador do usuário final.
+
+| Pacote | Licença | Uso |
+|---|---|---|
+| [`jest`](https://www.npmjs.com/package/jest) | MIT | Framework de testes |
+| [`jest-environment-jsdom`](https://www.npmjs.com/package/jest-environment-jsdom) | MIT | Ambiente DOM simulado para os testes |
+
+> Ambas as licenças MIT são permissivas e compatíveis com uso comercial e educacional, sem exigir atribuição visível na aplicação (apenas a manutenção do aviso de copyright no código-fonte das próprias bibliotecas, o que é responsabilidade do gerenciador de pacotes/npm, não deste projeto).
+
+---
+
+## ✅ Resumo de conformidade
+
+| Recurso | Licença | Uso comercial permitido? | Atribuição obrigatória? |
+|---|---|---|---|
+| Open-Meteo (dados) | CC BY 4.0 (nível gratuito) | ⚠️ Só com plano pago/chave | ✅ Sim |
+| Google Fonts | SIL OFL 1.1 | ✅ Sim | ❌ Não (mas boa prática) |
+| Weather Icons | OFL 1.1 (fonte) + MIT (CSS) | ✅ Sim | ✅ Sim (fonte) |
+| Jest | MIT | ✅ Sim | ❌ Não (mantido no npm) |
+| jest-environment-jsdom | MIT | ✅ Sim | ❌ Não (mantido no npm) |
+
+**Nenhum conflito de licenciamento foi identificado.** Todas as dependências usadas são compatíveis entre si e com a licença MIT deste projeto. O único ponto de atenção é o uso comercial da API Open-Meteo além do nível gratuito, que exigiria upgrade de plano e chave de API antes de qualquer uso comercial em escala.

@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Estação · Previsão do Tempo</title>
+
+
+  <!-- =====================================================
+       CABEÇALHOS DE SEGURANÇA (via meta tag)
+       Observação: para produção, prefira enviar estes
+       cabeçalhos via servidor/CDN (ex.: Netlify _headers,
+       Nginx, Cloudflare), pois alguns diretivas de CSP
+       (como frame-ancestors) não têm efeito via <meta>.
+  ====================================================== -->
+
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="default-src 'none'; script-src 'self'; style-src 'self' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data:; connect-src 'self' https://api.open-meteo.com https://geocoding-api.open-meteo.com; base-uri 'self'; form-action 'self';"
+  >
+
+  <meta
+    name="referrer"
+    content="no-referrer-when-downgrade"
+  >
+
+
+  <!-- =====================================================
+       GOOGLE FONTS
+  ====================================================== -->
+
+  <link
+    rel="preconnect"
+    href="https://fonts.googleapis.com"
+  >
+
+  <link
+    rel="preconnect"
+    href="https://fonts.gstatic.com"
+    crossorigin
+  >
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Space+Grotesk:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap"
+    rel="stylesheet"
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  >
+
+
+  <!-- =====================================================
+       WEATHER ICONS
+       Nota: recomenda-se gerar e adicionar um hash de
+       integridade (SRI) para esta versão fixa (2.0.12) ao
+       publicar em produção. Ver SECURITY.md para instruções.
+  ====================================================== -->
+
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/weather-icons/2.0.12/css/weather-icons.min.css"
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  >
+
+
+  <!-- =====================================================
+       CSS
+  ====================================================== -->
+
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
+
+</head>
+
+
+<body>
+
+
+  <!-- =====================================================
+       FUNDO
+  ====================================================== -->
+
+  <div
+    class="sky"
+    aria-hidden="true"
+  >
+
+    <div
+      class="sky__body"
+      id="skyBody"
+    ></div>
+
+
+    <!-- ESTRELAS -->
+
+    <div
+      class="stars"
+      id="stars"
+    ></div>
+
+
+    <!-- RADAR -->
+
+    <div
+      class="radar"
+      id="radar"
+    >
+
+      <div class="radar__circle"></div>
+
+      <div class="radar__line"></div>
+
+    </div>
+
+
+    <!-- CHUVA -->
+
+    <div
+      class="rain"
+      id="rain"
+    ></div>
+
+  </div>
+
+
+
+  <!-- =====================================================
+       CONTEÚDO PRINCIPAL
+  ====================================================== -->
+
+  <main class="station">
+
+
+    <!-- ===================================================
+         CABEÇALHO
+    ==================================================== -->
+
+    <header class="station__header">
+
+      <p class="eyebrow">
+        Estação meteorológica digital
+      </p>
+
+
+      <h1 class="wordmark">
+        Estação<span class="wordmark__dot">.</span>
+      </h1>
+
+
+      <!-- STATUS DO SISTEMA -->
+
+      <div class="system-status">
+
+        <span class="system-status__dot"></span>
+
+        SYSTEM ONLINE
+
+      </div>
+
+    </header>
+
+
+
+    <!-- ===================================================
+         CAMPO DE BUSCA
+    ==================================================== -->
+
+    <form
+      id="searchForm"
+      class="search"
+      autocomplete="off"
+    >
+
+      <label
+        for="cityInput"
+        class="search__label"
+      >
+        Consultar cidade
+      </label>
+
+
+      <div class="search__row">
+
+        <input
+          type="text"
+          id="cityInput"
+          name="city"
+          class="search__input"
+          placeholder="Ex.: São Paulo, Lisboa, Tóquio..."
+          required
+        >
+
+
+        <button
+          type="submit"
+          class="search__button"
+        >
+
+          <span>Buscar</span>
+
+        </button>
+
+      </div>
+
+    </form>
+
+
+
+    <!-- ===================================================
+         STATUS
+    ==================================================== -->
+
+    <section
+      id="status"
+      class="status"
+      hidden
+    ></section>
+
+
+
+    <!-- ===================================================
+         DATA E HORA
+    ==================================================== -->
+
+    <p
+      id="consultationDate"
+      class="consultation__date"
+    ></p>
+
+
+
+    <!-- ===================================================
+         RESULTADO
+    ==================================================== -->
+
+    <section
+      id="result"
+      class="reading"
+      hidden
+    >
+
+
+      <!-- LOCALIZAÇÃO -->
+
+      <div class="reading__location">
+
+        <h2
+          id="cityName"
+          class="reading__city"
+        >
+          —
+        </h2>
+
+
+        <p
+          id="cityMeta"
+          class="reading__meta"
+        >
+          —
+        </p>
+
+      </div>
+
+
+
+      <!-- =================================================
+           TEMPERATURA + CONDIÇÃO
+      ================================================== -->
+
+      <div class="reading__main">
+
+
+        <!-- GAUGE -->
+
+        <div class="gauge">
+
+          <svg
+            class="gauge__ring"
+            viewBox="0 0 200 200"
+            aria-hidden="true"
+          >
+
+            <circle
+              class="gauge__track"
+              cx="100"
+              cy="100"
+              r="88"
+            ></circle>
+
+
+            <circle
+              class="gauge__fill"
+              id="gaugeFill"
+              cx="100"
+              cy="100"
+              r="88"
+            ></circle>
+
+          </svg>
+
+
+          <div class="gauge__value">
+
+            <span
+              id="temperature"
+              class="gauge__number"
+            >
+              --
+            </span>
+
+
+            <span class="gauge__unit">
+              °C
+            </span>
+
+          </div>
+
+        </div>
+
+
+
+        <!-- CONDIÇÃO DO TEMPO -->
+
+        <div class="reading__condition">
+
+          <span
+            id="conditionIcon"
+            class="condition__icon wi"
+            aria-hidden="true"
+          ></span>
+
+
+          <span
+            id="conditionText"
+            class="condition__text"
+          >
+            Aguardando consulta
+          </span>
+
+
+          <span
+            id="feelsLike"
+            class="condition__feels"
+          ></span>
+
+        </div>
+
+      </div>
+
+
+
+      <!-- =================================================
+           MÉTRICAS
+      ================================================== -->
+
+      <dl class="metrics">
+
+
+        <!-- UMIDADE -->
+
+        <div class="metrics__item">
+
+          <dt>
+            Umidade
+          </dt>
+
+          <dd id="humidity">
+            —
+          </dd>
+
+        </div>
+
+
+        <!-- VENTO -->
+
+        <div class="metrics__item">
+
+          <dt>
+            Vento
+          </dt>
+
+          <dd id="wind">
+            —
+          </dd>
+
+        </div>
+
+
+        <!-- DIREÇÃO -->
+
+        <div class="metrics__item">
+
+          <dt>
+            Direção
+          </dt>
+
+          <dd id="windDir">
+            —
+          </dd>
+
+        </div>
+
+
+        <!-- COORDENADAS -->
+
+        <div class="metrics__item">
+
+          <dt>
+            Coordenadas
+          </dt>
+
+          <dd id="coords">
+            —
+          </dd>
+
+        </div>
+
+      </dl>
+
+
+      <!-- =================================================
+           PREVISÃO 5 DIAS
+      ================================================== -->
+
+      <div class="forecast">
+
+        <p class="forecast__label">
+          Previsão · Próximos 5 dias
+        </p>
+
+
+        <ol
+          id="forecastList"
+          class="forecast__list"
+        ></ol>
+
+      </div>
+
+
+    </section>
+
+
+  </main>
+
+
+
+  <!-- =====================================================
+       RODAPÉ
+  ====================================================== -->
+
+  <footer class="credit">
+
+    ESTAÇÃO // WEATHER MONITOR
+
+    <br>
+
+    Dados via
+
+    <a
+      href="https://open-meteo.com/"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      Open-Meteo
+    </a>
+
+
+    <p class="credit__privacy">
+      Esta aplicação não coleta, armazena nem compartilha
+      dados pessoais. O nome da cidade digitado é enviado
+      apenas à Open-Meteo para localizar as coordenadas
+      geográficas e consultar o clima, sem uso de cookies,
+      login ou rastreamento.
+      <a
+        href="https://open-meteo.com/en/terms"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Termos da Open-Meteo
+      </a>
+    </p>
+
+  </footer>
+
+
+
+  <!-- =====================================================
+       JAVASCRIPT
+  ====================================================== -->
+
+  <script src="api.js"></script>
+
+</body>
+
+</html>

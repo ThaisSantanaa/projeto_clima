@@ -1,0 +1,85 @@
+# 🔐 Relatório de Auditoria de Segurança e Privacidade
+
+> Relatório gerado por IA (Claude) a pedido do desenvolvedor, como parte do processo de revisão do **Projeto Clima**. Cobre análise de código estático, dependências e configuração de recursos externos. Não substitui uma auditoria de segurança profissional/pentest antes de uso em produção com tráfego real.
+
+**Data da análise:** 2026-08-17
+**Escopo:** `index.html`, `style.css`, `api.js`, `package.json`, `tests/`
+
+---
+
+## 1. Resumo executivo
+
+O projeto é uma aplicação **100% client-side** (sem backend próprio), que consome a API pública **Open-Meteo** (sem chave/autenticação) e usa dois recursos de terceiros via CDN (Google Fonts e cdnjs/Weather Icons). Por não ter servidor, banco de dados nem autenticação, a superfície de ataque é pequena — mas ainda existem pontos que merecem atenção antes de ir para produção.
+
+**Nenhum risco crítico foi encontrado.** Os pontos abaixo são de severidade **baixa a média**, típicos de qualquer app front-end que consome CDNs e APIs públicas.
+
+| Risco | Severidade | Status |
+|---|---|---|
+| Ausência de Content-Security-Policy | Média | ✅ Corrigido nesta auditoria |
+| Recursos de CDN sem Subresource Integrity (SRI) | Média | ⚠️ Recomendado (ver seção 4) |
+| Vazamento de dados de navegação (referrer) para terceiros | Baixa | ✅ Corrigido nesta auditoria |
+| Ausência de aviso de privacidade sobre dados enviados a terceiros | Baixa | ✅ Corrigido nesta auditoria |
+| Nenhuma chave de API exposta | — | ✅ Não se aplica (API não exige chave) |
+| XSS via injeção de HTML | — | ✅ Não encontrado (uso consistente de `textContent`) |
+| Dados pessoais/localização armazenados | — | ✅ Não se aplica (nada é persistido) |
+
+---
+
+## 2. Armazenamento de chaves e credenciais
+
+- ❌ **Não há chaves de API no código.** A Open-Meteo é gratuita e não exige autenticação para o uso atual (endpoints `/v1/forecast` e `/v1/search`). Não há `.env`, tokens ou segredos no repositório.
+- ✅ **Recomendação:** se no futuro o projeto migrar para um plano pago da Open-Meteo (que exige chave para uso comercial) ou outra API que exija chave, **nunca** coloque a chave diretamente no `api.js` (código client-side é sempre visível ao usuário). Nesse caso, a chamada precisaria passar por um backend/proxy próprio (ex.: Cloudflare Worker, função serverless) que guarde a chave em variável de ambiente no servidor.
+
+## 3. Dados de localização e privacidade
+
+- A aplicação **não usa geolocalização do navegador** (`navigator.geolocation`) atualmente — o usuário digita o nome da cidade manualmente. Isso reduz a superfície de dados sensíveis coletados.
+- O nome da cidade digitado é enviado à Open-Meteo via `URLSearchParams` (`geocoding-api.open-meteo.com/v1/search?name=...`), que trata automaticamente o *encoding* da string — não há concatenação manual de string em URL, o que evita *URL/header injection*.
+- **Nenhum dado é persistido** — não há uso de `localStorage`, `sessionStorage` nem cookies no projeto (confirmado por varredura no código-fonte).
+- ✅ **Ação aplicada:** foi adicionado um **aviso de privacidade visível na interface** (rodapé) explicando que a cidade digitada é enviada apenas à Open-Meteo, sem uso de cookies, login ou rastreamento, com link para os termos da Open-Meteo.
+- ⚠️ **Recomendação futura:** se a geolocalização automática do roadmap for implementada, será necessário: (1) solicitar permissão explícita do navegador, (2) atualizar o aviso de privacidade para mencionar a coleta de coordenadas, e (3) considerar que a geolocalização do navegador é um dado potencialmente sensível segundo LGPD/GDPR.
+
+## 4. Comunicação com APIs e recursos externos
+
+- ✅ Todas as chamadas (`fetch`) usam **HTTPS** — não há chamadas em `http://` no código.
+- ✅ As respostas da API são validadas antes do uso (`response.ok`, existência de `data.current` / `data.daily`, `data.results`), evitando falhas silenciosas ou crashes com dados malformados.
+- ⚠️ **Recursos carregados via CDN de terceiros** (Google Fonts e `cdnjs.cloudflare.com` para os ícones) representam um risco de **supply-chain**: se o CDN for comprometido, o conteúdo servido poderia ser malicioso.
+  - ✅ **Ação aplicada:** adicionados `crossorigin="anonymous"` e `referrerpolicy="no-referrer"` nesses links, evitando envio de credenciais/cookies e de dados de navegação (referrer) para os CDNs.
+  - ⚠️ **Recomendação (não aplicada automaticamente):** adicionar um hash de **Subresource Integrity (SRI)** ao `<link>` do Weather Icons, já que a versão está fixada (`2.0.12`, arquivo imutável). Gere o hash localmente antes de publicar:
+    ```bash
+    curl -s https://cdnjs.cloudflare.com/ajax/libs/weather-icons/2.0.12/css/weather-icons.min.css | openssl dgst -sha384 -binary | openssl base64 -A
+    ```
+    Depois adicione ao `<link>`: `integrity="sha384-<hash-gerado>"`. Não incluí um hash "chutado" no código porque um valor incorreto quebraria o carregamento do CSS — é mais seguro gerar e validar localmente.
+  - O Google Fonts CSS (`fonts.googleapis.com/css2?...`) **não é compatível com SRI**, pois o conteúdo pode variar por navegador/user-agent (a Google serve `@font-face` diferentes conforme o suporte a WOFF2). Isso é uma limitação conhecida do serviço, não uma falha do projeto.
+- ✅ **Content-Security-Policy adicionada** (via `<meta http-equiv>`) restringindo `script-src` a `'self'`, `connect-src` às APIs da Open-Meteo, e `style-src`/`font-src` aos domínios de CDN usados. Isso mitiga XSS mesmo que uma vulnerabilidade seja introduzida futuramente.
+  - ⚠️ Nota técnica: a diretiva `frame-ancestors` **não tem efeito via `<meta>`** (só via cabeçalho HTTP real). Para produção, recomenda-se configurar a CSP completa no servidor/CDN (ver seção 6).
+
+## 5. Prevenção de XSS e injeção
+
+- ✅ **Toda a renderização de dados vindos da API usa `element.textContent`**, nunca `innerHTML` com dados externos. Isso foi verificado em `renderWeather()` e `renderForecast()` — o único uso de `innerHTML` no projeto é `forecastListEl.innerHTML = ""` (limpeza de lista, sem dados), o que é seguro.
+- ✅ Os elementos da previsão de 5 dias são criados via `document.createElement()` + `textContent`, e não por concatenação de strings HTML — reforça a proteção contra XSS mesmo se a API retornasse texto malicioso em algum campo.
+- ✅ Não há `eval()`, `Function()`, `document.write()` ou manipulação de `outerHTML` no código.
+
+## 6. Recomendações para o ambiente de produção
+
+Ao publicar (ex.: Netlify, Vercel, GitHub Pages, Cloudflare Pages):
+
+1. **Forçar HTTPS** — a maioria dessas plataformas já faz isso por padrão; confirme que HTTP redireciona para HTTPS.
+2. **Configurar os cabeçalhos de segurança no servidor**, não apenas via `<meta>`. Exemplo de arquivo `_headers` (Netlify/Cloudflare Pages):
+   ```
+   /*
+     X-Frame-Options: DENY
+     X-Content-Type-Options: nosniff
+     Referrer-Policy: no-referrer-when-downgrade
+     Permissions-Policy: geolocation=(), camera=(), microphone=()
+     Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data:; connect-src 'self' https://api.open-meteo.com https://geocoding-api.open-meteo.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
+   ```
+3. **Adicionar o hash SRI** nos recursos de CDN, conforme instrução da seção 4.
+4. **`Permissions-Policy`** desabilitando `geolocation`, `camera` e `microphone`, já que a aplicação não usa (e, se usar geolocalização no futuro, ajustar essa diretiva de forma explícita).
+5. Manter as dependências de desenvolvimento (`jest`, `jest-environment-jsdom`) **fora do bundle de produção** — como o projeto não usa bundler, isso já é natural (só `index.html`, `style.css` e `api.js` são servidos), mas vale confirmar no processo de deploy.
+6. Rodar `npm audit` periodicamente para detectar vulnerabilidades conhecidas nas dependências de teste.
+
+---
+
+## 7. Conclusão
+
+O projeto já seguia boas práticas importantes (uso de `textContent`, validação de respostas da API, HTTPS em todas as chamadas, ausência de armazenamento de dados pessoais). As correções aplicadas nesta auditoria (CSP, `referrerpolicy`, `crossorigin`, aviso de privacidade e reforço do `rel` em links externos) elevam o nível de proteção contra os riscos mais comuns em aplicações front-end: XSS, vazamento de referrer e comprometimento de CDN. O item pendente de ação manual é a geração do hash SRI (seção 4), que não foi hardcoded automaticamente para evitar quebrar o carregamento dos ícones com um valor incorreto.
